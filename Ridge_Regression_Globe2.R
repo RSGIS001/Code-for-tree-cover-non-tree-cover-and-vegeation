@@ -1,3 +1,45 @@
+# ======================================================================
+# Ridge Regression Pipeline for Raster Data Analysis
+# ======================================================================
+# Purpose: Pixel-wise ridge regression modeling to assess environmental 
+#          controls on vegetation index
+#
+# Main Steps:
+# 1. Data preparation: Read vegetation index (Y) and 7 predictor (X) rasters,
+#    convert to matrix format
+# 2. Pixel-wise Z-score standardization: Remove scale effects for comparable coefficients
+# 3. Parallel ridge regression: Cross-validated ridge regression (alpha=0) for 
+#    each valid pixel (≥3 non-NA values)
+# 4. Stability assessment: Calculate coefficient path stability, mean VIF, and ΔR² 
+#    (variable importance)
+# 5. Coefficient back-transformation: Convert standardized coefficients to original scale
+# 6. Accuracy validation: Pearson correlation, R² and p-values between simulated and observed
+# 7. Output: Save coefficients, VIF, stability metrics, simulated values, residuals as rasters
+#
+# Input files:
+# - R_EC-Earth3-CC_Detrend.tif : Vegetation index (response variable)
+# - TC_BG_*_Detrend.tif, NTC_BG_*_Detrend.tif : Temperature and precipitation factors
+# - AI_*_Detrend.tif, TAS_*_Detrend.tif, RSS_*_Detrend.tif, WS_*_Detrend.tif
+# - CO2_Detrend_512_256.tif : CO2 concentration
+#
+# Output files (saved in outputs_ridge directory):
+# - coef_var1~7.tif : Regression coefficients (original scale)
+# - vif_var1~7.tif : Variance inflation factors
+# - y_sim_stack.tif : Simulated values raster stack
+# - residual_z_stack.tif : Z-score residuals
+# - pearson_r.tif, R2.tif : Correlation coefficient and R-squared
+# - beta_stability_*.tif : Coefficient path stability (0~1, higher = more stable)
+# - vif_path_*.tif : Mean VIF along regularization path
+# - deltaR2_*.tif : R² drop after variable removal (variable importance)
+# - summary_statistics.csv : Summary stats for coefficients and VIF
+# - coefficient_distributions.png : Histograms of coefficient distributions
+#
+# Key Parameters:
+# - Ridge regression alpha = 0 (pure L2 regularization)
+# - Cross-validation folds = min(3, sample size)
+# - Minimum effective sample size = 5
+
+
 # ====================== Libraries ======================
 library(raster)
 library(glmnet)
